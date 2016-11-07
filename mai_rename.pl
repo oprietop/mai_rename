@@ -47,7 +47,7 @@ sub parse_sfo {
 
 # Get all the zip files on current dir
 opendir(DIR, ".");
-my @files = grep(/\.zip$/, readdir(DIR));
+my @files = grep(/\.zip$/i, readdir(DIR));
 closedir(DIR);
 
 # Process every zip file
