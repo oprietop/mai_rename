@@ -54,6 +54,8 @@ closedir(DIR);
 foreach my $file (@files) {
   my $zip = Archive::Zip->new();
   die "Can't read zip file '$file'\n" unless $zip->read($file) == 0;
+  my $new_name;
+  my $app_ver = '0.00';
   # Look for param.sfo files
   foreach my $member ($zip->membersMatching('.*param\.sfo$')) {
     my $buffer;
@@ -62,12 +64,15 @@ foreach my $file (@files) {
     # Get the info from the param.sfo file
     my $info = parse_sfo $buffer;
     map { print "$_ -> '$info->{$_}'\n" } sort keys %{ $info } if $ARGV[0];
-    # We are only interested in the 'gp' and 'gd' catefories
-    if ($info->{CATEGORY} and $info->{CATEGORY} eq "gp" or $info->{CATEGORY} eq "gd") {
-      my $new_name = "$info->{TITLE} [$info->{TITLE_ID}] ($info->{APP_VER}) ($info->{REGION}).zip";
-      print "'$file' -> '$new_name'\n";
-      move($file, $new_name) or die "File could not be moved!\n";
-      last;
+    # We are only interested in the 'gp' and 'gd' categories
+    if ($info->{CATEGORY} && $info->{CATEGORY} eq "gp" || $info->{CATEGORY} eq "gd") {
+      # We will keep the highest app_ver from all valid sfos
+      $app_ver = $info->{APP_VER} if $info->{APP_VER} gt $app_ver;
+      $new_name = "$info->{TITLE} [$info->{TITLE_ID}] ($info->{APP_VER}) ($info->{REGION}).zip";
     }
   }
+  # Print and move the file if we got a valid name
+  next unless $new_name;
+  print "'$file' -> '$new_name'\n";
+  move($file, $new_name) or die "File could not be moved!\n";
 }
