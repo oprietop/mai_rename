@@ -36,7 +36,7 @@ sub parse_sfo {
     my ($param_length, $param_offset) = unpack("x4 I x4 I", $param_bytes);
     # Get a slice with the current param, clean it and assign it as our value
     my $value = substr($slurp, $data_offset+$param_offset, $param_length);
-    $value =~ s/[\000\n\r\/]//g;
+    $value =~ s/\000|\n|\r|\\|\/|:|\*|\?|"|<|>|\|//g;
     $href->{$key} = $value;
   }
 
@@ -53,7 +53,10 @@ closedir(DIR);
 # Process every zip file
 foreach my $file (@files) {
   my $zip = Archive::Zip->new();
-  die "Can't read zip file '$file'\n" unless $zip->read($file) == 0;
+  unless ($zip->read($file) == 0) {
+    print "Can't read zip file '$file', Skipping.\n";
+    next;
+ }
   my $new_name;
   my $app_ver = '0.00';
   # Look for param.sfo files
