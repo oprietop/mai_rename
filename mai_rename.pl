@@ -68,7 +68,7 @@ foreach my $file (@files) {
     my $info = parse_sfo $buffer;
     map { print "$_ -> '$info->{$_}'\n" } sort keys %{ $info } if $ARGV[0];
     # We are only interested in the 'gp' and 'gd' categories
-    if ($info->{CATEGORY} && $info->{CATEGORY} eq "gp" || $info->{CATEGORY} eq "gd") {
+    if ($info->{CATEGORY} && $info->{CATEGORY} =~ /g[dp]/) {
       # We will keep the highest app_ver from all valid sfos
       $app_ver = $info->{APP_VER} if $info->{APP_VER} gt $app_ver;
       $new_name = "$info->{TITLE} [$info->{TITLE_ID}] ($info->{APP_VER}) ($info->{REGION}).zip";
