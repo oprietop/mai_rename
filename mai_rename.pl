@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use Archive::Zip;
 use Archive::Zip::MemberRead;
-use File::Copy;
+use File::Copy qw(move);
 
 # Some region_code/country relations.
 my $regions = { 'PCSB' => 'EUR'  , 'VCES' => 'EUR'  , 'VLES' => 'EUR' , 'PCSF' => 'EUR'
@@ -65,7 +65,7 @@ foreach my $file (@files) {
     my $bytes = $member->readFileHandle()->read($buffer);
     print "Readed $bytes bytes from '".$member->fileName()."'$file''\n" if $ARGV[0];
     # Get the info from the param.sfo file
-    my $info = parse_sfo $buffer;
+    my $info = parse_sfo($buffer) || {};
     map { print "$_ -> '$info->{$_}'\n" } sort keys %{ $info } if $ARGV[0];
     # We are only interested in the 'gp' and 'gd' categories
     if ($info->{CATEGORY} && $info->{CATEGORY} =~ /g[dp]/) {
